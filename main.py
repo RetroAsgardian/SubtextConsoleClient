@@ -13,6 +13,7 @@ def __main__():
 	curses.noecho()
 	curses.raw()
 	curses.start_color()
+	curses.curs_set(0)
 	stdscr.keypad(True)
 	
 	scr_h, scr_w = stdscr.getmaxyx()
@@ -22,15 +23,26 @@ def __main__():
 	main_win = curses.newwin(scr_h - 4, scr_w, 1, 0)
 	compose_win = curses.newwin(3, scr_w, scr_h - 4, 0)
 	
+	# White on blue - status window
+	curses.init_pair(1, 0x0f, 0x04)
 	
+	main_win.refresh()
+	main_win.getch()
 
+# Elaborate wrapper
 if __name__ == "__main__":
+	exc = None
+	
 	try:
 		__main__()
-	except:
-		pass
+	except BaseException as e:
+		exc = e
 	
 	# Reset terminal settings
+	curses.curs_set(2)
 	curses.echo()
 	curses.noraw()
 	curses.endwin()
+	
+	if exc:
+		print(exc)
