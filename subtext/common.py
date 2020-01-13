@@ -48,14 +48,20 @@ class Context:
 		"""
 		Send an HTTP request.
 		"""
-		resp = requests.request(method, self.url + url, **kwargs)
+		if 'data' in kwargs:
+			resp = requests.request(method, self.url + url, **kwargs, headers={'Content-Type': 'application/octet-stream'})
+		else:
+			resp = requests.request(method, self.url + url, **kwargs)
 		
 		# Handle error
 		if resp.status_code // 100 != 2:
 			if resp.headers.get('Content-Type', None).startswith('application/json'):
 				errdata = resp.json()
-				errmsg = errdata.pop('error')
-				raise api_error(errmsg, resp.status_code, **errdata)
+				if 'error' in errdata:
+					errmsg = errdata.pop('error')
+					raise api_error(errmsg, resp.status_code, **errdata)
+				else:
+					raise api_error(None, resp.status_code, text=resp.text)
 			else:
 				raise api_error(None, resp.status_code, text=resp.text)
 		

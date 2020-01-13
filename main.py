@@ -125,9 +125,18 @@ def __main__():
 			except BaseException as e:
 				error_label.text = str(type(e)) + " " + str(e)
 		
+		def create():
+			try:
+				user_id = client.create_user(username_field.text, password_field.text)
+				client.login(user_id, password_field.text)
+				form.finish()
+			except BaseException as e:
+				error_label.text = str(type(e)) + " " + str(e)
+		
 		form.add(username_field)
 		form.add(password_field)
 		form.add(ui.Button("Log in", login))
+		form.add(ui.Button("Create", create))
 		form.add(ui.Button("Quit", form.finish))
 		form.add(error_label)
 		
@@ -135,9 +144,30 @@ def __main__():
 	
 	login_form()
 	
+	user = client.get_user()
+	crypto = subtext.Encryption(user)
+	
+	status_win.clear()
+	status_win.addstr(0, 0, "FRIENDS")
+	status_win.refresh()
+	
+	main_win.clear()
+	y = 0
+	for friend in user.get_friends():
+		friend.refresh()
+		main_win.addstr(y, 0, "@{} ({})".format(friend.name, friend.id))
+		y += 1
+		if y > 20:
+			break
+	
+	main_win.refresh()
+	
+	while main_win.getch() != ord("q"):
+		pass
+	
 	client.logout()
 
-# Elaborate wrapper
+# Elaborate wrapper to ensure terminal is reset even if __main__() throws an exception
 if __name__ == "__main__":
 	exc = None
 	
@@ -146,7 +176,6 @@ if __name__ == "__main__":
 	except BaseException as e:
 		exc = e
 	
-	# Reset terminal settings
 	curses.curs_set(2)
 	curses.echo()
 	curses.noraw()
