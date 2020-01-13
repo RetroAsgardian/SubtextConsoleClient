@@ -52,7 +52,7 @@ class Context:
 		
 		# Handle error
 		if resp.status_code // 100 != 2:
-			if resp.headers.get('Content-Type', None) == 'application/json':
+			if resp.headers.get('Content-Type', None).startswith('application/json'):
 				errdata = resp.json()
 				errmsg = errdata.pop('error')
 				raise api_error(errmsg, resp.status_code, **errdata)
