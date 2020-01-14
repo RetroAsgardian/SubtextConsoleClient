@@ -42,9 +42,9 @@ class Client:
 		if isinstance(user, UUID):
 			user_id = user
 		else:
-			user_id = self.ctx.get('/Subtext/user/queryidbyname', params={
+			user_id = UUID(self.ctx.get('/Subtext/user/queryidbyname', params={
 				'name': user
-			}).json()
+			}).json())
 		
 		session_id = self.ctx.post('/Subtext/user/login', params={
 			'userId': user_id,
@@ -52,9 +52,9 @@ class Client:
 		}).json()
 		
 		self.ctx._session_id = UUID(session_id)
-		self.ctx._user_id = UUID(user_id)
+		self.ctx._user_id = user_id
 	
-	def create_user(self, username: str, password: str, public_key: bytes = b'') -> UUID:
+	def create_user(self, username: str, password: str, public_key: bytes = b'\x00') -> UUID:
 		"""
 		Create a new user account.
 		"""

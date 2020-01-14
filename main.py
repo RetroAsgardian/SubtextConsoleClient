@@ -63,6 +63,7 @@ def __main__():
 	curses.init_pair(11, COLOR_BLACK, COLOR_RED)
 	curses.init_pair(12, COLOR_BLACK, COLOR_PURPLE)
 	
+	
 	# Set up windows
 	status_win.bkgd(' ', PURPLE_FG | curses.A_UNDERLINE)
 	status_win.clear()
@@ -73,13 +74,15 @@ def __main__():
 	compose_win.bkgd(' ', WHITE_FG)
 	compose_win.clear()
 	for x in range(0, scr_w):
-		compose_win.addch(0, x, curses.ACS_HLINE, PURPLE_FG)
+		compose_win.addstr(0, x, '\u2500', PURPLE_FG)
 	compose_win.refresh()
 	
 	status_win.addstr(0, 0, "SETUP")
 	status_win.refresh()
 	
+	status_win.keypad(True)
 	main_win.keypad(True)
+	compose_win.keypad(True)
 	
 	def hostname_form() -> str:
 		form = ui.Form(main_win)
@@ -123,7 +126,7 @@ def __main__():
 				client.login(username_field.text, password_field.text)
 				form.finish()
 			except BaseException as e:
-				error_label.text = str(type(e)) + " " + str(e)
+				error_label.text = str(e)
 		
 		def create():
 			try:
@@ -131,7 +134,7 @@ def __main__():
 				client.login(user_id, password_field.text)
 				form.finish()
 			except BaseException as e:
-				error_label.text = str(type(e)) + " " + str(e)
+				error_label.text = str(e)
 		
 		form.add(username_field)
 		form.add(password_field)
@@ -147,25 +150,41 @@ def __main__():
 	user = client.get_user()
 	crypto = subtext.Encryption(user)
 	
-	status_win.clear()
-	status_win.addstr(0, 0, "FRIENDS")
-	status_win.refresh()
-	
-	main_win.clear()
-	y = 0
-	for friend in user.get_friends():
-		friend.refresh()
-		main_win.addstr(y, 0, "@{} ({})".format(friend.name, friend.id))
-		y += 1
-		if y > 20:
-			break
-	
-	main_win.refresh()
-	
-	while main_win.getch() != ord("q"):
-		pass
-	
-	client.logout()
+	nav_cmd = False
+	while True:
+		if nav_cmd:
+			status_win.bkgd(' ', PURPLE_BG)
+			status_win.clear()
+			status_win.addstr(0, 0, "[NAV]")
+		else:
+			status_win.bkgd(' ', PURPLE_FG | curses.A_UNDERLINE)
+			status_win.clear()
+		status_win.addstr(0, 6, "WELCOME")
+		status_win.refresh()
+		
+		main_win.clear()
+		main_win.addstr(0, 0, "You are logged in as ")
+		main_win.addstr(str(user.id), MAGENTA_FG | curses.A_BOLD)
+		main_win.addstr("@{}".format(client.instance_id))
+		main_win.addstr(2, 0, "F1 to begin nav command")
+		main_win.addstr(3, 0, "F1 Q - Log out and quit")
+		main_win.addstr(4, 0, "F1 f - Friend list")
+		main_win.addstr(5, 0, "F1 b - Board list")
+		main_win.addstr(6, 0, "F1 F - Friend request list")
+		main_win.addstr(7, 0, "F1 B - Blocked user list")
+		main_win.addstr(8, 0, "F1 c - Compose message")
+		main_win.addstr(9, 0, "F1 R - Refresh view")
+		main_win.refresh()
+		
+		key = main_win.getch()
+		if nav_cmd:
+			nav_cmd = False
+			if key == ord('Q'):
+				client.logout()
+				return
+		else:
+			if key == curses.KEY_F1:
+				nav_cmd = True
 
 # Elaborate wrapper to ensure terminal is reset even if __main__() throws an exception
 if __name__ == "__main__":
