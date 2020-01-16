@@ -172,6 +172,8 @@ class BoardPage(Page):
 		for msg in self.board.get_messages(type="Message"):
 			if len(self.messages) >= 50:
 				break
+			if msg.type != "Message":
+				continue
 			if msg.content is None:
 				msg.refresh()
 			try:
@@ -197,7 +199,8 @@ class BoardPage(Page):
 			for msg in self.messages:
 				if i >= self.main_win.getmaxyx()[0]:
 					break
-				self.main_win.addstr(i, 0, '{}: {}'.format(msg[2], msg[0]), (0 if msg[1] else YELLOW_FG) | (curses.A_REVERSE if self.pos == i else 0))
+				self.main_win.addstr(i, 0, '{}: '.format(msg[2]), (0 if msg[1] else YELLOW_FG) | (curses.A_REVERSE if self.pos == i else 0))
+				self.main_win.addstr(msg[0], (0 if msg[1] else YELLOW_FG) | (curses.A_REVERSE if self.pos == i else 0) | curses.A_BOLD)
 				i += 1
 		else:
 			self.main_win.addstr(0, 0, "No messages")
@@ -386,8 +389,8 @@ def __main__():
 	user = client.get_user()
 	crypto = subtext.Encryption(user)
 	
-	# Wait up to 2 seconds for a keypress
-	curses.halfdelay(20)
+	# Wait up to 3 seconds for a keypress
+	curses.halfdelay(30)
 	
 	nav_cmd = False
 	page = None

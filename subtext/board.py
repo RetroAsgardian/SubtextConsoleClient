@@ -118,7 +118,7 @@ class Board(SubtextObj):
 					yield Message(UUID(message['id']), self.ctx,
 						board=self,
 						timestamp=iso8601.parse_date(message['timestamp']),
-						author=User(UUID(message['authorId'])),
+						author=User(UUID(message['authorId']), self.ctx) if message.get('authorId', None) else None,
 						is_system=message['isSystem'],
 						type=message['type'],
 						content=base64.b64decode(message['content']) if message.get('content', None) else None
@@ -173,9 +173,9 @@ class Message(SubtextObj):
 		
 		if 'X-Metadata' in resp.headers:
 			metadata = json.loads(resp.headers['X-Metadata'])
-			self.timestamp = iso8601.parse_date(metadata['timestamp'])
-			self.author = User(UUID(metadata['authorId']), self.ctx)
-			self.is_system = metadata['isSystem']
-			self.type = metadata['type']
+			self.timestamp = iso8601.parse_date(metadata['Timestamp']) if metadata.get('Timestamp', None) else None
+			self.author = User(UUID(metadata['AuthorId']), self.ctx) if metadata.get('AuthorId', None) else None
+			self.is_system = metadata['IsSystem'] if metadata.get('IsSystem', None) else None
+			self.type = metadata['Type'] if metadata.get('Type', None) else None
 		
 		self.content = resp.content
