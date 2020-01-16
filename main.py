@@ -196,11 +196,17 @@ class BoardPage(Page):
 		self.main_win.clear()
 		if len(self.messages) > 0:
 			i = 0
+			y = 0
 			for msg in self.messages:
-				if i >= self.main_win.getmaxyx()[0]:
+				if y >= self.main_win.getmaxyx()[0]:
 					break
-				self.main_win.addstr(i, 0, '{}: '.format(msg[2]), (0 if msg[1] else YELLOW_FG) | (curses.A_REVERSE if self.pos == i else 0))
-				self.main_win.addstr(msg[0], (0 if msg[1] else YELLOW_FG) | (curses.A_REVERSE if self.pos == i else 0) | curses.A_BOLD)
+				if (len(msg[0]) + len(msg[2]) + 2) / self.main_win.getmaxyx()[1] > self.main_win.getmaxyx()[0] - y:
+					self.main_win.addstr(y, 0, '{}: '.format(msg[2]), (0 if msg[1] else YELLOW_FG) | (curses.A_REVERSE if self.pos == i else 0))
+					self.main_win.addstr(msg[0][:self.main_win.getmaxyx()[1] - len(msg[2]) - 6] + '...', (0 if msg[1] else YELLOW_FG) | (curses.A_REVERSE if self.pos == i else 0) | curses.A_BOLD)
+				else:
+					self.main_win.addstr(y, 0, '{}: '.format(msg[2]), (0 if msg[1] else YELLOW_FG) | (curses.A_REVERSE if self.pos == i else 0))
+					self.main_win.addstr(msg[0], (0 if msg[1] else YELLOW_FG) | (curses.A_REVERSE if self.pos == i else 0) | curses.A_BOLD)
+				y = self.main_win.getyx()[0] + 1
 				i += 1
 		else:
 			self.main_win.addstr(0, 0, "No messages")
